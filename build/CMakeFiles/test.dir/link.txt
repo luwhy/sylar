@@ -1,0 +1,1 @@
+/usr/bin/g++  -rdynamic -O3 -g -std=c++11 -Wall -Wno-deprecated -Werror -Wno-unused-function -g CMakeFiles/test.dir/test/test.cc.o -o ../bin/test  -Wl,-rpath,"/home/lubo/sylar/build/&{PROJECT_SOURCE_DIR}/lib" "&{PROJECT_SOURCE_DIR}/lib/libsylar.so" 
