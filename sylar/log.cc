@@ -15,6 +15,8 @@ namespace sylar
         }
     };
 
+
+
     class LevelFormatItem : public LogFormatter::FormatItem
     {
     public:
@@ -26,6 +28,9 @@ namespace sylar
         }
     };
 
+
+
+
     class ElapseFormatItem : public LogFormatter::FormatItem
     {
     public:
@@ -35,6 +40,8 @@ namespace sylar
             os << event->getElapse();
         }
     };
+
+
 
     class NameFormatItem : public LogFormatter::FormatItem
     {
@@ -46,6 +53,8 @@ namespace sylar
         }
     };
 
+
+
     class ThreadIdFormatItem : public LogFormatter::FormatItem
     {
     public:
@@ -56,6 +65,8 @@ namespace sylar
         }
     };
 
+
+
     class FiberIdFormatItem : public LogFormatter::FormatItem
     {
     public:
@@ -65,6 +76,8 @@ namespace sylar
             os << event->getFiberId();
         }
     };
+
+
 
     class DateTimeFormatItem : public LogFormatter::FormatItem
     {
@@ -79,6 +92,8 @@ namespace sylar
         std::string m_format;
     };
 
+
+
     class FilenameFormatItem : public LogFormatter::FormatItem
     {
     public:
@@ -89,6 +104,7 @@ namespace sylar
         }
     };
 
+
     class LineFormatItem : public LogFormatter::FormatItem
     {
     public:
@@ -98,6 +114,7 @@ namespace sylar
             os << event->getline();
         }
     };
+
 
     class StringFormatItem : public LogFormatter::FormatItem
     {
@@ -112,6 +129,8 @@ namespace sylar
         std::string m_string;
     };
 
+
+
     class NewLineFormatItem : public LogFormatter::FormatItem
     {
     public:
@@ -121,6 +140,23 @@ namespace sylar
             os << std::endl;
         }
     };
+
+
+
+
+    LogEvent::LogEvent(const char*file,int32_t line,uint32_t elapse,uint32_t thread_id,uint32_t fiber_id,uint64_t time):
+    m_file(file),
+    m_line(line),
+    m_elapse(elapse),
+    m_threadId(thread_id),
+    m_fiberId(fiber_id),
+    m_time(time)
+    {
+
+    }
+
+
+
 
     const char *
     LogLevel::ToString(LogLevel::Level Level)
@@ -142,12 +178,19 @@ namespace sylar
             break;
         }
     }
-    Logger::Logger(const std::string &name) : m_name(name)
+
+
+    Logger::Logger(const std::string &name) : m_name(name),m_level(LogLevel::Level::DEBUG)
     {
+        
+        m_formatter.reset(new LogFormatter("%d [%p] %f:%l %m %n"));
     }
 
     void Logger::addAppender(LogAppender::ptr appender)
     {
+        if(!appender->getFormatter()){
+            appender->setFormatter(m_formatter);
+        }
         m_appenders.push_back(appender);
     }
 
@@ -196,6 +239,8 @@ namespace sylar
         log(LogLevel::Level::FATAL, event);
     }
 
+
+
     FileLogAppender::FileLogAppender(const std::string &filename) : m_filename(filename)
     {
     }
@@ -211,11 +256,15 @@ namespace sylar
         return m_filestream.is_open();
     }
 
+
+
     void FileLogAppender::log(std::shared_ptr<Logger> logger, LogLevel::Level level, LogEvent::ptr event)
     {
         if (level >= m_level)
             m_filestream << m_formatter->format(logger, level, event);
     }
+
+
 
     void StdoutLogAppender::log(std::shared_ptr<Logger> logger, LogLevel::Level level, LogEvent::ptr event)
     {
@@ -224,6 +273,8 @@ namespace sylar
             std::cout << m_formatter->format(logger, level, event);
         }
     }
+
+
 
     LogFormatter::LogFormatter(const std::string &pattern) : m_pattern(pattern)
     {

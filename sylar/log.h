@@ -16,7 +16,7 @@ namespace sylar
     {
     public:
         typedef std::shared_ptr<LogEvent> ptr;
-        LogEvent();
+        LogEvent(const char*file,int32_t line,uint32_t elapse,uint32_t thread_id,uint32_t fiber_id,uint64_t time);
 
         const char *getFile() const { return m_file; }
 
@@ -30,10 +30,12 @@ namespace sylar
 
         uint64_t getTime() const { return m_time; }
 
-        const std::string &getContent() const { return m_content; }
+        //const std::string &getContent() const { return m_content; }
 
         std::shared_ptr<Logger> getLogger() const { return m_logger; }
 
+        std::string getContent() const {return m_ss.str();
+        z}
     private:
         const char *m_file = nullptr; // 文件名
         int32_t m_line = 0;           // 行号
@@ -41,6 +43,7 @@ namespace sylar
         uint32_t m_elapse = 0;        // 程序启动到现在的毫秒数
         uint32_t m_fiberId = 0;       // 协程id
         uint64_t m_time;              // 时间戳
+        std::stringstream m_ss;
         std::string m_content;
 
         std::shared_ptr<Logger> m_logger;
@@ -139,6 +142,7 @@ namespace sylar
         std::string m_name;                      // 日志名称
         LogLevel::Level m_level;                 // 日志级别
         std::list<LogAppender::ptr> m_appenders; // Appender集合
+        LogFormatter::ptr m_formatter;
     };
 
     // 输出到控制台的appender
