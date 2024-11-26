@@ -35,7 +35,7 @@ namespace sylar
         std::shared_ptr<Logger> getLogger() const { return m_logger; }
 
         std::string getContent() const {return m_ss.str();
-        z}
+        }
     private:
         const char *m_file = nullptr; // 文件名
         int32_t m_line = 0;           // 行号
@@ -49,6 +49,7 @@ namespace sylar
         std::shared_ptr<Logger> m_logger;
     };
 
+    //日志输出级别
     class LogLevel
     {
     public:
@@ -63,6 +64,20 @@ namespace sylar
         static const char *ToString(LogLevel::Level level);
     };
 
+    class FormatItem
+    {
+    public:
+        typedef std::shared_ptr<FormatItem> ptr;
+
+        FormatItem(const std::string &fmt = "");
+
+        virtual ~FormatItem() {}
+
+        virtual void format(std::ostream &os, std::shared_ptr<Logger> Logger, LogLevel::Level level, LogEvent::ptr event) = 0;
+    };
+
+
+
     // 日志格式器
     class LogFormatter
     {
@@ -74,18 +89,6 @@ namespace sylar
 
         void init();
 
-    public:
-        class FormatItem
-        {
-        public:
-            typedef std::shared_ptr<FormatItem> ptr;
-
-            FormatItem(const std::string &fmt = "");
-
-            virtual ~FormatItem() {}
-
-            virtual void format(std::ostream &os, std::shared_ptr<Logger> Logger, LogLevel::Level level, LogEvent::ptr event) = 0;
-        };
 
     private:
         std::string m_pattern;
