@@ -16,7 +16,7 @@ namespace sylar
     {
     public:
         typedef std::shared_ptr<LogEvent> ptr;
-        LogEvent(const char*file,int32_t line,uint32_t elapse,uint32_t thread_id,uint32_t fiber_id,uint64_t time);
+        LogEvent(std::shared_ptr<Logger>logger,const char*file,int32_t line,uint32_t elapse,uint32_t thread_id,uint32_t fiber_id,uint64_t time);
 
         const char *getFile() const { return m_file; }
 
@@ -32,7 +32,9 @@ namespace sylar
 
         //const std::string &getContent() const { return m_content; }
 
-        std::shared_ptr<Logger> getLogger() const { return m_logger; }
+        std::shared_ptr<Logger> getLogger() const { 
+            return m_logger; 
+        }
 
         std::string getContent() const {return m_ss.str();
         }
@@ -139,7 +141,9 @@ namespace sylar
 
         void setLevel(LogLevel::Level val) { m_level = val; }
 
-        const std::string &getName() { return m_name; }
+        std::string getName() const { 
+            return this->m_name;
+        }
 
     private:
         std::string m_name;                      // 日志名称

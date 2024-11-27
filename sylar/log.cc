@@ -1,8 +1,8 @@
 #include "log.h"
 #include <functional>
 #include <map>
-#include<time.h>
-#include<string.h>
+#include <time.h>
+#include <string.h>
 namespace sylar
 {
 
@@ -71,18 +71,20 @@ namespace sylar
     class DateTimeFormatItem : public FormatItem
     {
     public:
-        DateTimeFormatItem(const std::string &format = "%Y-%m-%d %H:%M:%S") : m_format(format) {
-            if(m_format.empty()){
-                m_format="%Y-%m-%d %H:%M:%S";
+        DateTimeFormatItem(const std::string &format = "%Y-%m-%d %H:%M:%S") : m_format(format)
+        {
+            if (m_format.empty())
+            {
+                m_format = "%Y-%m-%d %H:%M:%S";
             }
         }
         void format(std::ostream &os, Logger::ptr logger, LogLevel::Level level, LogEvent::ptr event) override
         {
             struct tm _tm;
-            time_t time=event->getTime();
-            localtime_r(&time,&_tm);
+            time_t time = event->getTime();
+            localtime_r(&time, &_tm);
             char buf[64];
-            strftime(buf,sizeof(buf),m_format.c_str(),&_tm);
+            strftime(buf, sizeof(buf), m_format.c_str(), &_tm);
             os << buf;
         }
 
@@ -123,6 +125,19 @@ namespace sylar
         std::string m_string;
     };
 
+    class TabFormatItem : public FormatItem
+    {
+    public:
+        TabFormatItem(const std::string str = "\t") : FormatItem(str), m_string(str) {}
+        void format(std::ostream &os, Logger::ptr logger, LogLevel::Level level, LogEvent::ptr event) override
+        {
+            os << "\t";
+        }
+
+    private:
+        std::string m_string;
+    };
+
     class NewLineFormatItem : public FormatItem
     {
     public:
@@ -132,15 +147,23 @@ namespace sylar
             os << std::endl;
         }
     };
-
-    LogEvent::LogEvent(const char *file, int32_t line, uint32_t elapse, uint32_t thread_id, uint32_t fiber_id, uint64_t time) : m_file(file),
-                                                                                                                                m_line(line),
-                                                                                                                                m_threadId(thread_id),
-                                                                                                                                m_elapse(elapse),
-                                                                                                                                m_fiberId(fiber_id),
-                                                                                                                                m_time(time)
-    {
+    LogEvent::LogEvent(std::shared_ptr<Logger>logger,const char *file,int32_t line,uint32_t elapse,uint32_t thread_id,uint32_t fiber_id,uint64_t time){
+        this->m_logger=logger;
+        this->m_file=file;
+        this->m_line=line;
+        this->m_elapse=elapse;
+        this->m_threadId=thread_id;
+        this->m_fiberId=fiber_id;
+        this->m_time=time;
     }
+    // LogEvent::LogEvent(char *file, int32_t line, uint32_t elapse, uint32_t thread_id, uint32_t fiber_id, uint64_t time) : m_file(file),
+    //                                                                                                                       m_line(line),
+    //                                                                                                                       m_threadId(thread_id),
+    //                                                                                                                       m_elapse(elapse),
+    //                                                                                                                       m_fiberId(fiber_id),
+    //                                                                                                                       m_time(time)
+    // {
+    // }
 
     const char *
     LogLevel::ToString(LogLevel::Level Level)
@@ -166,7 +189,7 @@ namespace sylar
     Logger::Logger(const std::string &name) : m_name(name), m_level(LogLevel::Level::DEBUG)
     {
 
-        m_formatter.reset(new LogFormatter("%d [%p] %f:%l %m %n"));
+        m_formatter.reset(new LogFormatter("%d{%Y-%m-%d %H:%M:%S}%T%t%T%F%T[%p]%T[%c]%T%f:%l%T%m%n"));
     }
 
     void Logger::addAppender(LogAppender::ptr appender)
@@ -265,7 +288,6 @@ namespace sylar
         }
         return ss.str();
     }
-    //%xxx %xxx{xxx} %%
     void LogFormatter::init()
     {
         std::cout << "init" << std::endl;
@@ -371,9 +393,9 @@ namespace sylar
             XX(d, DateTimeFormatItem), // d:时间
             XX(f, FilenameFormatItem), // f:文件名
             XX(l, LineFormatItem),     // l:行号
-            // XX(T, TabFormatItem),        // T:Tab
-            XX(F, FiberIdFormatItem), // F:协程id
-                                      // XX(N, ThreadNameFormatItem), // N:线程名称
+            XX(T, TabFormatItem),      // T:Tab
+            XX(F, FiberIdFormatItem),  // F:协程id
+                                       // XX(N, ThreadNameFormatItem), // N:线程名称
 
 #undef XX
         };
