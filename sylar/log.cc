@@ -6,6 +6,27 @@
 namespace sylar
 {
 
+    const char *
+    LogLevel::ToString(LogLevel::Level Level)
+    {
+        switch (Level)
+        {
+#define XX(name)                \
+    case LogLevel::Level::name: \
+        return #name;           \
+        break;
+            XX(DEBUG);
+            XX(INFO);
+            XX(WARN);
+            XX(ERROR);
+            XX(FATAL);
+#undef XX
+        default:
+            return "UNKONW";
+            break;
+        }
+    }
+
     class MessageFormatItem : public FormatItem
     {
     public:
@@ -147,7 +168,8 @@ namespace sylar
             os << std::endl;
         }
     };
-    LogEvent::LogEvent(std::shared_ptr<Logger>logger,const char *file,int32_t line,uint32_t elapse,uint32_t thread_id,uint32_t fiber_id,uint64_t time){
+
+    LogEvent::LogEvent(std::shared_ptr<Logger> logger, LogLevel::Level level,const char *file,int32_t line,uint32_t elapse,uint32_t thread_id,uint32_t fiber_id,uint64_t time){
         this->m_logger=logger;
         this->m_file=file;
         this->m_line=line;
@@ -155,34 +177,16 @@ namespace sylar
         this->m_threadId=thread_id;
         this->m_fiberId=fiber_id;
         this->m_time=time;
+        this->m_level=level;
     }
-    // LogEvent::LogEvent(char *file, int32_t line, uint32_t elapse, uint32_t thread_id, uint32_t fiber_id, uint64_t time) : m_file(file),
-    //                                                                                                                       m_line(line),
-    //                                                                                                                       m_threadId(thread_id),
-    //                                                                                                                       m_elapse(elapse),
-    //                                                                                                                       m_fiberId(fiber_id),
-    //                                                                                                                       m_time(time)
-    // {
-    // }
 
-    const char *
-    LogLevel::ToString(LogLevel::Level Level)
+    void LogEvent::format(const char *fmt, va_list al)
     {
-        switch (Level)
-        {
-#define XX(name)                \
-    case LogLevel::Level::name: \
-        return #name;           \
-        break;
-            XX(DEBUG);
-            XX(INFO);
-            XX(WARN);
-            XX(ERROR);
-            XX(FATAL);
-#undef XX
-        default:
-            return "UNKONW";
-            break;
+        char* buf=nullptr;
+        int len=vasprintf(&buf,fmt,al);
+        if(len!=-1){
+            m_ss<<std::string(buf,len);
+            free(buf);
         }
     }
 
@@ -213,6 +217,7 @@ namespace sylar
         }
     }
 
+    //shared_from_this:获取自身shared_ptr,需要在类搭配td::enable_shared_from_this<Logger>使用                        
     void Logger::log(LogLevel::Level level, LogEvent::ptr event)
     {
         if (level >= m_level)
@@ -434,4 +439,21 @@ namespace sylar
     FormatItem::FormatItem(const std::string &fmt)
     {
     }
+
+    //LogEventWrap类内函数定义
+    LogEventWrap::LogEventWrap(LogEvent::ptr e)
+    {
+        this->m_event=e;
+    }
+    LogEventWrap::~LogEventWrap()
+    {
+       m_event->getLogger()->log(m_event->getLevel(),m_event);
+    }
+    std::stringstream &LogEventWrap::getSS()
+    {
+        // TODO: 在此处插入 return 语句
+        return m_event->getSS();
+    }
+    
+
 }
