@@ -169,25 +169,35 @@ namespace sylar
         }
     };
 
-    LogEvent::LogEvent(std::shared_ptr<Logger> logger, LogLevel::Level level,const char *file,int32_t line,uint32_t elapse,uint32_t thread_id,uint32_t fiber_id,uint64_t time){
-        this->m_logger=logger;
-        this->m_file=file;
-        this->m_line=line;
-        this->m_elapse=elapse;
-        this->m_threadId=thread_id;
-        this->m_fiberId=fiber_id;
-        this->m_time=time;
-        this->m_level=level;
+    LogEvent::LogEvent(std::shared_ptr<Logger> logger, LogLevel::Level level, const char *file, int32_t line, uint32_t elapse, uint32_t thread_id, uint32_t fiber_id, uint64_t time)
+    {
+        this->m_logger = logger;
+        this->m_file = file;
+        this->m_line = line;
+        this->m_elapse = elapse;
+        this->m_threadId = thread_id;
+        this->m_fiberId = fiber_id;
+        this->m_time = time;
+        this->m_level = level;
     }
 
     void LogEvent::format(const char *fmt, va_list al)
     {
-        char* buf=nullptr;
-        int len=vasprintf(&buf,fmt,al);
-        if(len!=-1){
-            m_ss<<std::string(buf,len);
+        char *buf = nullptr;
+        int len = vasprintf(&buf, fmt, al);
+        if (len != -1)
+        {
+            m_ss << std::string(buf, len);
             free(buf);
         }
+    }
+
+    void LogEvent::format(const char *fmt, ...)
+    {
+        va_list al;
+        va_start(al, fmt);
+        format(fmt, al);
+        va_end(al);
     }
 
     Logger::Logger(const std::string &name) : m_name(name), m_level(LogLevel::Level::DEBUG)
@@ -217,7 +227,7 @@ namespace sylar
         }
     }
 
-    //shared_from_this:获取自身shared_ptr,需要在类搭配td::enable_shared_from_this<Logger>使用                        
+    // shared_from_this:获取自身shared_ptr,需要在类搭配td::enable_shared_from_this<Logger>使用
     void Logger::log(LogLevel::Level level, LogEvent::ptr event)
     {
         if (level >= m_level)
@@ -253,6 +263,7 @@ namespace sylar
 
     FileLogAppender::FileLogAppender(const std::string &filename) : m_filename(filename)
     {
+        this->reopen();
     }
 
     bool FileLogAppender::reopen()
@@ -440,20 +451,36 @@ namespace sylar
     {
     }
 
-    //LogEventWrap类内函数定义
+    // LogEventWrap类内函数定义
     LogEventWrap::LogEventWrap(LogEvent::ptr e)
     {
-        this->m_event=e;
+        this->m_event = e;
     }
     LogEventWrap::~LogEventWrap()
     {
-       m_event->getLogger()->log(m_event->getLevel(),m_event);
+        m_event->getLogger()->log(m_event->getLevel(), m_event);
     }
     std::stringstream &LogEventWrap::getSS()
     {
         // TODO: 在此处插入 return 语句
         return m_event->getSS();
     }
-    
 
+    LogEvent::ptr LogEventWrap::getEvent()
+    {
+        return m_event;
+    }
+    LogManage::LogManage()
+    {
+        m_root.reset(new Logger);
+        m_root->addAppender(LogAppender::ptr(new StdoutLogAppender));
+    }
+    Logger::ptr LogManage::getLogger(const std::string &name)
+    {
+        return m_root;
+    }
+    void LogManage::init()
+    {
+        
+    }
 }
