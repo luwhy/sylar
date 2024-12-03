@@ -39,6 +39,8 @@
 #define SYLAR_LOG_FMT_ERROR(logger, fmt, ...) SYLAR_LOG_FMT_LEVEL(logger, sylar::LogLevel::Level::ERROR, fmt, __VA_ARGS__)
 #define SYLAR_LOG_FMT_FATAL(logger, fmt, ...) SYLAR_LOG_FMT_LEVEL(logger, sylar::LogLevel::Level::FATAL, fmt, __VA_ARGS__)
 
+#define SYLAR_LOG_ROOT() sylar::LoggerMgr::GetInstance()->getRoot();
+
 namespace sylar
 {
     class Logger;
@@ -241,12 +243,18 @@ namespace sylar
         Logger::ptr getLogger(const std::string &name);
         void init();
 
+        Logger::ptr getRoot() const
+        {
+            return m_root;
+        }
+
     private:
         std::map<std::string, Logger::ptr> m_logger;
         Logger::ptr m_root;
     };
-    
+
     typedef sylar::Singleton<LogManage> LoggerMgr;
+
 }
 
 #endif
