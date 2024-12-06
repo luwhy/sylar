@@ -5,6 +5,9 @@
 #include <sstream>
 #include <boost/lexical_cast.hpp>
 #include "log.h"
+#include <yaml-cpp/yaml.h>
+#include <algorithm>
+#include <string>
 namespace sylar
 {
     class ConfigVarBase
@@ -12,8 +15,9 @@ namespace sylar
     public:
         typedef std::shared_ptr<ConfigVarBase> ptr;
         ConfigVarBase(const std::string &name, const std::string &description = "") : m_name(name),
-                                                                                      m_description(description)
+                                                                                      m_description{description}
         {
+            std::transform(m_name.begin(), m_name.end(), m_name.begin(), ::tolower);
         }
         virtual ~ConfigVarBase() {};
         const std::string &getName() const
@@ -47,13 +51,13 @@ namespace sylar
         {
             try
             {
-                boost::lexical_cast<std::string>(m_value);
+                return boost::lexical_cast<std::string>(m_value);
             }
             catch (std::exception &e)
             {
                 SYLAR_LOG_ERROR(SYLAR_LOG_ROOT()) << "ConfigVar::toString exception" << e.what() << "convert:" << typeid(m_value).name() << "to_string";
+                return "";
             }
-            return "";
         }
         bool fromString(const std::string &val) override
         {
@@ -86,7 +90,10 @@ namespace sylar
     class Config
     {
     public:
+        // s_datas数据类型
+
         typedef std::map<std::string, ConfigVarBase::ptr> ConfigVarMap;
+
         template <class T>
         static typename ConfigVar<T>::ptr Lookup(const std::string &name, const T &default_value, const std::string &description)
         {
@@ -96,11 +103,13 @@ namespace sylar
                 SYLAR_LOG_INFO(SYLAR_LOG_ROOT()) << "LookUp name=" << name << "exists";
                 return tmp;
             }
-            if (name.find_first_not_of("abdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ._0123456789") != std::string::npos)
+            if (name.find_first_not_of("abdefghijklmnopqrstuvwxyz._0123456789") != std::string::npos)
             {
                 SYLAR_LOG_ERROR(SYLAR_LOG_ROOT()) << "Lookup name invalid" << name;
                 throw std::invalid_argument(name);
             }
+            // 显示说明这是一个ConfigVar<T>::ptr是类型而不是成员变量
+            // 防止出现configvar中有ptr变量
             typename ConfigVar<T>::ptr v(new ConfigVar<T>(name, default_value, description));
             s_datas[name] = v;
             return v;
@@ -117,6 +126,9 @@ namespace sylar
             //
             return std::dynamic_pointer_cast<ConfigVar<T>>(it->second);
         }
+
+        static void LoadFromYaml(const YAML::Node &root);
+        static ConfigVarBase::ptr LookupBase(const std::string &name);
 
     private:
         static ConfigVarMap s_datas;
