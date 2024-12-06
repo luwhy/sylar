@@ -6,6 +6,7 @@
 #include <boost/lexical_cast.hpp>
 #include "log.h"
 #include <yaml-cpp/yaml.h>
+#include <yaml-cpp/parser.h>
 #include <algorithm>
 #include <string>
 namespace sylar
@@ -37,8 +38,59 @@ namespace sylar
         std::string m_name;
         std::string m_description;
     };
+    // FORM TO
+    template <class F, class T>
+    class LexicalCast
+    {
+    public:
+        T operator()(const F &v)
+        {
+            return boost::lexical_cast<T>(v);
+        }
+    };
 
+    // 对vector类型做偏特化
+    // 从str到vector
     template <class T>
+    class LexicalCast<std::string, std::vector<T>>
+    {
+    public:
+        std::vector<T> operator()(const std::string &v)
+        {
+            YAML::Node node = YAML::Load(v);
+            typename std::vector<T> vec;
+            std::stringstream ss;
+            for (size_t i = 0; i < node.size(); ++i)
+            {
+                ss.str("");
+                ss << node[i];
+                vec.push_back(LexicalCast<std::string, T>()(ss.str()));
+            }
+            return vec;
+        }
+    };
+    // 从vector到str
+    template <class T>
+    class LexicalCast<std::vector<T>, std::string>
+    {
+    public:
+        std::string operator()(const std::vector<T> &v)
+        {
+            YAML::Node node;
+            for (auto &i : v)
+            {
+                node.push_back(YAML::Load(LexicalCast<T, std::string>()(i)));
+            }
+            std::stringstream ss;
+            ss << node;
+            return ss.str();
+        }
+    };
+
+    // 序列化和反序列化
+    // FromStr T operator()(const std::string&)
+    // ToStr std::string operator()(const T&)
+    template <class T, class FromStr = LexicalCast<std::string, T>, class ToStr = LexicalCast<T, std::string>>
     class ConfigVar : public ConfigVarBase
     {
     public:
@@ -51,7 +103,9 @@ namespace sylar
         {
             try
             {
-                return boost::lexical_cast<std::string>(m_value);
+                // lexical_cast函数模板提供了一种方便且一致的形式，用于支持以文本形式表示的任意类型之间的公共转换
+                // return boost::lexical_cast<std::string>(m_value);
+                return ToStr()(m_value);
             }
             catch (std::exception &e)
             {
@@ -63,7 +117,8 @@ namespace sylar
         {
             try
             {
-                m_value = boost::lexical_cast<T>(val);
+                // m_value = boost::lexical_cast<T>(val);
+                setValue(FromStr()(val));
                 return true;
             }
             catch (std::exception &e)
@@ -103,7 +158,7 @@ namespace sylar
                 SYLAR_LOG_INFO(SYLAR_LOG_ROOT()) << "LookUp name=" << name << "exists";
                 return tmp;
             }
-            if (name.find_first_not_of("abdefghijklmnopqrstuvwxyz._0123456789") != std::string::npos)
+            if (name.find_first_not_of("abcdefghijklmnopqrstuvwxyz._0123456789") != std::string::npos)
             {
                 SYLAR_LOG_ERROR(SYLAR_LOG_ROOT()) << "Lookup name invalid" << name;
                 throw std::invalid_argument(name);
