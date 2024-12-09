@@ -9,6 +9,10 @@ sylar::ConfigVar<float>::ptr g_float_value_config =
     sylar::Config::Lookup("system.value", (float)10.2f, "system value");
 sylar::ConfigVar<std::vector<int>>::ptr g_vector_config =
     sylar::Config::Lookup("system.int_vec", std::vector<int>{1, 2}, "system int vec");
+
+sylar::ConfigVar<std::list<int>>::ptr g_list_config =
+    sylar::Config::Lookup("system.int_list", std::list<int>{1, 2}, "system int list");
+
 void print_yaml(const YAML::Node &node, int level)
 {
     if (node.IsScalar())
@@ -46,21 +50,26 @@ void testConfig()
 {
     SYLAR_LOG_INFO(SYLAR_LOG_ROOT()) << g_int_value_config->getValue();
     SYLAR_LOG_INFO(SYLAR_LOG_ROOT()) << g_float_value_config->toString();
-    auto v = g_vector_config->getValue();
-    for (auto &i : v)
-    {
-        SYLAR_LOG_INFO(SYLAR_LOG_ROOT()) << "before int_vec: " << i;
+
+#define XX(g_var, name, prefix)                                             \
+    {                                                                       \
+        auto &vx = g_var->getValue();                                       \
+        for (auto &i : vx)                                                  \
+        {                                                                   \
+            SYLAR_LOG_INFO(SYLAR_LOG_ROOT()) << #prefix " " #name ":" << i; \
+        }                                                                   \
     }
+
+    XX(g_vector_config, int_vec, before);
+    XX(g_list_config, int_list, before);
 
     YAML::Node root = YAML::LoadFile("./config/log.yaml");
     sylar::Config::LoadFromYaml(root);
     SYLAR_LOG_INFO(SYLAR_LOG_ROOT()) << g_int_value_config->getValue();
     SYLAR_LOG_INFO(SYLAR_LOG_ROOT()) << g_float_value_config->toString();
-    v = g_vector_config->getValue();
-    for (auto &i : v)
-    {
-        SYLAR_LOG_INFO(SYLAR_LOG_ROOT()) << "after int_vec: " << i;
-    }
+    XX(g_vector_config, int_vec, after);
+    XX(g_list_config, int_list, after);
+#undef XX
 }
 int main()
 {
