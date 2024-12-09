@@ -9,6 +9,12 @@
 #include <yaml-cpp/parser.h>
 #include <algorithm>
 #include <string>
+#include <vector>
+#include <map>
+#include <set>
+#include <unordered_map>
+#include <unordered_set>
+#include <list>
 namespace sylar
 {
     class ConfigVarBase
@@ -75,6 +81,43 @@ namespace sylar
     {
     public:
         std::string operator()(const std::vector<T> &v)
+        {
+            YAML::Node node;
+            for (auto &i : v)
+            {
+                node.push_back(YAML::Load(LexicalCast<T, std::string>()(i)));
+            }
+            std::stringstream ss;
+            ss << node;
+            return ss.str();
+        }
+    };
+
+    // 从str到list
+    template <class T>
+    class LexicalCast<std::string, std::list<T>>
+    {
+    public:
+        std::list<T> operator()(const std::string &v)
+        {
+            YAML::Node node = YAML::Load(v);
+            typename std::list<T> vec;
+            std::stringstream ss;
+            for (size_t i = 0; i < node.size(); ++i)
+            {
+                ss.str("");
+                ss << node[i];
+                vec.push_back(LexicalCast<std::string, T>()(ss.str()));
+            }
+            return vec;
+        }
+    };
+    // 从list到str
+    template <class T>
+    class LexicalCast<std::list<T>, std::string>
+    {
+    public:
+        std::string operator()(const std::list<T> &v)
         {
             YAML::Node node;
             for (auto &i : v)

@@ -21,3 +21,6 @@ system:
    int_vec: 
     - 10
     - 20
+   list_vec: 
+    - 30
+    - 40
