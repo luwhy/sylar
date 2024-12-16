@@ -3,6 +3,7 @@
 #include <yaml-cpp/yaml.h>
 #include <yaml-cpp/parser.h>
 #include <iostream>
+#include <string>
 sylar::ConfigVar<int>::ptr g_int_value_config =
     sylar::Config::Lookup("system.port", (int)8080, "system port");
 sylar::ConfigVar<float>::ptr g_float_value_config =
@@ -105,9 +106,68 @@ void testConfig()
 #undef XX
 #undef XX_M
 }
+
+class Person
+{
+public:
+    std::string toString() const
+    {
+        std::stringstream ss;
+        ss << "[PersonName=" << m_name << " age=" << m_age << " sex=" << m_sex << "]";
+        return ss.str();
+    }
+    std::string m_name;
+    int m_age = 0;
+    bool m_sex = 0;
+};
+
+namespace sylar
+{
+    template <>
+    class LexicalCast<std::string, Person>
+    {
+    public:
+        Person operator()(const std::string &v)
+        {
+            YAML::Node node = YAML::Load(v);
+            Person p;
+            std::stringstream ss;
+            p.m_age = node["age"].as<int>();
+            p.m_sex = node["sex"].as<bool>();
+            p.m_name = node["age"].as<std::string>();
+            return p;
+        }
+    };
+    template <>
+    class LexicalCast<Person, std::string>
+    {
+    public:
+        std::string operator()(const Person &p)
+        {
+            YAML::Node node;
+            node["name"] = p.m_name;
+            node["age"] = p.m_age;
+            node["sex"] = p.m_sex;
+            std::stringstream ss;
+            ss << node;
+            return ss.str();
+        }
+    };
+
+} // namespace sylar
+
+sylar::ConfigVar<Person>::ptr g_person = sylar::Config::Lookup("class.person", Person(), "system person");
+void testClass()
+{
+    SYLAR_LOG_INFO(SYLAR_LOG_ROOT()) << "before: " << g_person->getValue().toString() << " - " << g_person->toString();
+    YAML::Node root = YAML::LoadFile("./config/log.yaml");
+    sylar::Config::LoadFromYaml(root);
+    SYLAR_LOG_INFO(SYLAR_LOG_ROOT()) << "after: " << g_person->getValue().toString() << " - " << g_person->toString();
+}
+
 int main()
 {
     // testYaml();
-    testConfig();
+    testClass();
     return 0;
 }

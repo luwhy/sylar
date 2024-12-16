@@ -39,6 +39,7 @@ namespace sylar
 
         // 从string转
         virtual bool fromString(const std::string &val) = 0;
+        virtual std::string getTypeName() const = 0;
 
     protected:
         std::string m_name;
@@ -323,6 +324,7 @@ namespace sylar
         {
             m_value = t;
         }
+        std::string getTypeName() const override { return typeid(T).name(); }
 
     private:
         T m_value;
@@ -339,6 +341,22 @@ namespace sylar
         template <class T>
         static typename ConfigVar<T>::ptr Lookup(const std::string &name, const T &default_value, const std::string &description)
         {
+            auto it = s_datas.find(name);
+            if (it != s_datas.end())
+            {
+                // 转化为智能指针
+                auto tmp = std::dynamic_pointer_cast<ConfigVar<T>>(it->second);
+                if (tmp)
+                {
+                    SYLAR_LOG_INFO(SYLAR_LOG_ROOT()) << "LookUp name=" << name << "exists";
+                    return tmp;
+                }
+                else
+                {
+                    // typeid运行时返回变量或表达式的类型名称
+                    SYLAR_LOG_ERROR(SYLAR_LOG_ROOT()) << "LookUp name=" << name << "exists,but type not exists " << typeid(T).name() << " real type= " << it->second->getTypeName() << " " << it->second->toString();
+                }
+            }
             auto tmp = Lookup<T>(name);
             if (tmp)
             {
