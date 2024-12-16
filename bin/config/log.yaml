@@ -21,6 +21,12 @@ system:
    int_vec: 
     - 10
     - 20
-   list_vec: 
-    - 30
-    - 40
+   int_list: [30,40]
+   int_set: [30,20,40,30]
+   int_unset: [30,20,40,30]
+   int_map: 
+    k: 22
+    j: 33
+   int_unmap: 
+    k: 22
+    j: 33
