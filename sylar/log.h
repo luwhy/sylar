@@ -41,6 +41,8 @@
 
 #define SYLAR_LOG_ROOT() sylar::LoggerMgr::GetInstance()->getRoot()
 
+#define SYLAR_LOG_NAME(name) sylar::LoggerMgr::GetInstance()->getLogger(name)
+
 namespace sylar
 {
     class Logger;

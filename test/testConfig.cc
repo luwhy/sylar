@@ -93,7 +93,7 @@ void testConfig()
     XX_M(g_map_config, int_map, before);
     XX_M(g_unmap_config, int_unmap, before);
 
-    YAML::Node root = YAML::LoadFile("./config/log.yaml");
+    YAML::Node root = YAML::LoadFile("./config/test.yaml");
     sylar::Config::LoadFromYaml(root);
     SYLAR_LOG_INFO(SYLAR_LOG_ROOT()) << g_int_value_config->getValue();
     SYLAR_LOG_INFO(SYLAR_LOG_ROOT()) << g_float_value_config->toString();
@@ -181,7 +181,7 @@ void testClass()
                           { SYLAR_LOG_INFO(SYLAR_LOG_ROOT()) << "old_value = " << oldValue.toString() << " new_value=" << newValue.toString(); });
     // XXPM(g_person_map, "class.map before")
 
-    YAML::Node root = YAML::LoadFile("./config/log.yaml");
+    YAML::Node root = YAML::LoadFile("./config/test.yaml");
     sylar::Config::LoadFromYaml(root);
     SYLAR_LOG_INFO(SYLAR_LOG_ROOT()) << "after: " << g_person->getValue().toString() << " - " << g_person->toString();
 
