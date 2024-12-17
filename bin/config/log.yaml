@@ -30,3 +30,17 @@ system:
    int_unmap: 
     k: 22
     j: 33
+class:
+    person:
+     name: lubo
+     age: 30
+     sex: true
+    map:
+      lubo01:
+        name: lubo1
+        age: 18
+        sex: false
+      lubo02:
+        name: lubo2
+        age: 33
+        sex: true

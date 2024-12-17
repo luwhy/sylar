@@ -116,6 +116,11 @@ public:
         ss << "[PersonName=" << m_name << " age=" << m_age << " sex=" << m_sex << "]";
         return ss.str();
     }
+    bool operator==(const Person &oth) const
+    {
+        return m_name == oth.m_name &&
+               m_age == oth.m_age && m_sex == oth.m_sex;
+    }
     std::string m_name;
     int m_age = 0;
     bool m_sex = 0;
@@ -157,12 +162,31 @@ namespace sylar
 } // namespace sylar
 
 sylar::ConfigVar<Person>::ptr g_person = sylar::Config::Lookup("class.person", Person(), "system person");
+
+sylar::ConfigVar<std::map<std::string, Person>>::ptr g_person_map = sylar::Config::Lookup("class.map", std::map<std::string, Person>(), "system person");
 void testClass()
 {
-    SYLAR_LOG_INFO(SYLAR_LOG_ROOT()) << "before: " << g_person->getValue().toString() << " - " << g_person->toString();
+    // SYLAR_LOG_INFO(SYLAR_LOG_ROOT()) << "before: " << g_person->getValue().toString() << " - " << g_person->toString();
+
+#define XXPM(g_var, prefix)                                                                                 \
+    {                                                                                                       \
+        auto m_p = g_person_map->getValue();                                                                \
+        for (auto &i : m_p)                                                                                 \
+        {                                                                                                   \
+            SYLAR_LOG_INFO(SYLAR_LOG_ROOT()) << #prefix << ": " << i.first << " - " << i.second.toString(); \
+        }                                                                                                   \
+        SYLAR_LOG_INFO(SYLAR_LOG_ROOT()) << #prefix << ": " << m_p.size();                                  \
+    }
+    g_person->addListener(10, [](const Person &oldValue, const Person &newValue)
+                          { SYLAR_LOG_INFO(SYLAR_LOG_ROOT()) << "old_value = " << oldValue.toString() << " new_value=" << newValue.toString(); });
+    // XXPM(g_person_map, "class.map before")
+
     YAML::Node root = YAML::LoadFile("./config/log.yaml");
     sylar::Config::LoadFromYaml(root);
     SYLAR_LOG_INFO(SYLAR_LOG_ROOT()) << "after: " << g_person->getValue().toString() << " - " << g_person->toString();
+
+    // XXPM(g_person_map, "class.map after")
+#undef XXPM
 }
 
 int main()

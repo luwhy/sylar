@@ -15,12 +15,14 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <list>
+#include <functional>
 namespace sylar
 {
     class ConfigVarBase
     {
     public:
         typedef std::shared_ptr<ConfigVarBase> ptr;
+
         ConfigVarBase(const std::string &name, const std::string &description = "") : m_name(name),
                                                                                       m_description{description}
         {
@@ -283,6 +285,8 @@ namespace sylar
     {
     public:
         typedef std::shared_ptr<ConfigVar> ptr;
+        typedef std::function<void(const T &old_value, const T &new_value)> on_change_cb;
+
         ConfigVar(const std::string &name, const T &default_value, const std::string &description) : ConfigVarBase(name, description),
                                                                                                      m_value(default_value)
         {
@@ -320,14 +324,44 @@ namespace sylar
             return m_value;
         }
 
-        void setValue(const T &t)
+        void setValue(const T &v)
         {
-            m_value = t;
+            if (v == m_value)
+            {
+                return;
+            }
+            for (auto &i : m_cbs)
+            {
+                i.second(m_value, v);
+            }
+            m_value = v;
         }
         std::string getTypeName() const override { return typeid(T).name(); }
 
+        // 增加监听事件
+        void addListener(uint64_t key, on_change_cb cb)
+        {
+            m_cbs[key] = cb;
+        }
+        void delListener(uint64_t key)
+        {
+            this->m_cbs.erase(key);
+        }
+        on_change_cb getListener(uint64_t key)
+        {
+            auto it = m_cbs.find(key);
+            return it == m_cbs.end() ? nullptr : it->second;
+        }
+
+        void clearListener()
+        {
+            this->m_cbs.clear();
+        }
+
     private:
         T m_value;
+        // 无法判断是否是同一个function所以需要用到map,uint_64，要求唯一，一般可以用hash
+        std::map<uint64_t, on_change_cb> m_cbs;
     };
 
     // 模板类不能在cpp中实现，因为模板类在运行时才实现，所以连接的时候如果分离，就会报错
