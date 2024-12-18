@@ -3,6 +3,7 @@
 #include <map>
 #include <time.h>
 #include <string.h>
+#include "config.h"
 namespace sylar
 {
 
@@ -233,9 +234,16 @@ namespace sylar
         if (level >= m_level)
         {
             auto self = shared_from_this();
-            for (auto &i : m_appenders)
+            if (!m_appenders.empty())
             {
-                i->log(self, level, event);
+                for (auto &i : m_appenders)
+                {
+                    i->log(self, level, event);
+                }
+            }
+            else if (m_root)
+            {
+                m_root->log(level, event);
             }
         }
     }
@@ -474,13 +482,45 @@ namespace sylar
     {
         m_root.reset(new Logger);
         m_root->addAppender(LogAppender::ptr(new StdoutLogAppender));
+        init();
     }
     Logger::ptr LogManage::getLogger(const std::string &name)
     {
-        return m_root;
+        auto it = m_logger.find(name);
+        if (it != m_logger.end())
+        {
+            return it->second;
+        }
+        Logger::ptr logger(new Logger(name));
+        logger->m_root = m_root;
+        m_logger[name] = logger;
+        return logger;
     }
+    struct LogAppenderDefine
+    {
+        int type = 0; // 1是file，2是stdout
+        LogLevel::Level level = LogLevel::Level::UNKOWN;
+        std::string formatter;
+        std::string file;
+        bool operator==(const LogAppenderDefine &oth) const
+        {
+            return type == oth.type && level == oth.level && formatter == oth.formatter && file == oth.file;
+        }
+    };
+
+    struct LogDefine
+    {
+        std::string name;
+        LogLevel::Level level;
+        std::string formatter;
+        std::vector<LogAppenderDefine> appenders;
+        bool operator==(const LogDefine &oth) const
+        {
+            return name == oth.name && level == oth.level && appenders == appenders;
+        }
+    };
+    ConfigVar<std::vector<LogDefine>>::ptr g_log_defines = Config::Lookup("logs", std::vector<LogDefine>(), "logs config");
     void LogManage::init()
     {
-        
     }
 }

@@ -46,17 +46,19 @@
 namespace sylar
 {
     class Logger;
-
+    class LogManage;
     class LogLevel
     {
     public:
         enum class Level : int
         {
+            UNKOWN = 0,
             DEBUG = 1,
             INFO = 2,
             WARN = 3,
             ERROR = 4,
-            FATAL = 5
+            FATAL = 5,
+
         };
         static const char *ToString(LogLevel::Level level);
     };
@@ -185,6 +187,8 @@ namespace sylar
     // 日志器
     class Logger : public std::enable_shared_from_this<Logger>
     {
+        friend class LogManage;
+
     public:
         typedef std::shared_ptr<Logger> ptr;
         Logger(const std::string &name = "root");
@@ -213,6 +217,7 @@ namespace sylar
         LogLevel::Level m_level;                 // 日志级别
         std::list<LogAppender::ptr> m_appenders; // Appender集合
         LogFormatter::ptr m_formatter;
+        Logger::ptr m_root;
     };
 
     // 输出到控制台的appender
@@ -243,6 +248,7 @@ namespace sylar
     public:
         LogManage();
         Logger::ptr getLogger(const std::string &name);
+
         void init();
 
         Logger::ptr getRoot() const
