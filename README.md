@@ -9,3 +9,7 @@
 logs:
    name: root
    level: (debug, info,warn,error,fatal)
+
+
+Logger::ptr g_log =SYLAR_LOG_NAME("system");
+//m_root,m_system->m_root 当logger的appenders为空，使用root写logger

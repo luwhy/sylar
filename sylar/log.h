@@ -151,6 +151,10 @@ namespace sylar
         std::string format(std::shared_ptr<Logger> logger, LogLevel::Level level, LogEvent::ptr event);
 
         void init();
+        bool isError() const
+        {
+            return this->m_error;
+        }
 
     private:
         std::string m_pattern;
@@ -202,6 +206,7 @@ namespace sylar
 
         void addAppender(LogAppender::ptr appender);
         void delAppender(LogAppender::ptr appender);
+        void clearAppenders();
 
         LogLevel::Level getLevel() const { return m_level; }
 
@@ -211,6 +216,9 @@ namespace sylar
         {
             return this->m_name;
         }
+        void setFormatter(LogFormatter::ptr val);
+        void setFormatter(const std::string &val);
+        LogFormatter::ptr getFormatter();
 
     private:
         std::string m_name;                      // 日志名称
