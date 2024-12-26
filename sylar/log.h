@@ -61,6 +61,7 @@ namespace sylar
 
         };
         static const char *ToString(LogLevel::Level level);
+        static LogLevel::Level FromString(const std::string &str);
     };
 
     // 日志事件

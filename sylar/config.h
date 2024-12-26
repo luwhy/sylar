@@ -405,15 +405,15 @@ namespace sylar
             // 显示说明这是一个ConfigVar<T>::ptr是类型而不是成员变量
             // 防止出现configvar中有ptr变量
             typename ConfigVar<T>::ptr v(new ConfigVar<T>(name, default_value, description));
-            s_datas[name] = v;
+            GetDatas()[name] = v;
             return v;
         }
         //
         template <class T>
         static typename ConfigVar<T>::ptr Lookup(const std::string &name)
         {
-            auto it = s_datas.find(name);
-            if (it == s_datas.end())
+            auto it = GetDatas().find(name);
+            if (it == GetDatas().end())
             {
                 return nullptr;
             }
@@ -426,6 +426,11 @@ namespace sylar
 
     private:
         static ConfigVarMap s_datas;
+        static ConfigVarMap &GetDatas()
+        {
+            static ConfigVarMap s_datas;
+            return s_datas;
+        }
     };
 
 } // namespace sylar
