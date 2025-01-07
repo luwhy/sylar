@@ -685,6 +685,7 @@ namespace sylar
     };
 
     ConfigVar<std::set<LogDefine>>::ptr g_log_defines = Config::Lookup("logs", std::set<LogDefine>(), "logs config");
+
     struct LogIniter
     {
         LogIniter()
@@ -699,7 +700,7 @@ namespace sylar
                                                if (it == old_value.end())
                                                {
                                                    // 新增logger
-                                                   logger.reset(new sylar::Logger(i.name));
+                                                   logger = SYLAR_LOG_NAME(i.name);
                                                }
                                                else
                                                {

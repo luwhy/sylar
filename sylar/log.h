@@ -12,7 +12,12 @@
 #include "util.h"
 #include <map>
 #include "singleton.h"
-
+/**
+ * logger 日志器
+ * logformatter 格式
+ *
+ *
+ */
 #define SYLAR_LOG_LEVEL(logger, level)                                                                                        \
     if (logger->getLevel() <= level)                                                                                          \
     sylar::LogEventWrap(sylar::LogEvent::ptr(new sylar::LogEvent(logger, level, __FILE__, __LINE__, 0, sylar::GetPthreadId(), \

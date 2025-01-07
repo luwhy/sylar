@@ -180,18 +180,25 @@ void testClass()
     g_person->addListener(10, [](const Person &oldValue, const Person &newValue)
                           { SYLAR_LOG_INFO(SYLAR_LOG_ROOT()) << "old_value = " << oldValue.toString() << " new_value=" << newValue.toString(); });
     // XXPM(g_person_map, "class.map before")
-
+    std::cout << 1 << std::endl;
     YAML::Node root = YAML::LoadFile("./config/test.yaml");
     sylar::Config::LoadFromYaml(root);
+    std::cout << 2 << std::endl;
     SYLAR_LOG_INFO(SYLAR_LOG_ROOT()) << "after: " << g_person->getValue().toString() << " - " << g_person->toString();
 
     // XXPM(g_person_map, "class.map after")
 #undef XXPM
 }
 
+void testLog()
+{
+    YAML::Node root = YAML::LoadFile("/home/lubo/project/sylar/bin/config/log.yaml");
+    sylar::Config::LoadFromYaml(root);
+}
 int main()
 {
     // testYaml();
-    testClass();
+    // testClass();
+    testLog();
     return 0;
 }
