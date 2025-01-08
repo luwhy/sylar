@@ -1,0 +1,43 @@
+#ifndef __SYLAR_THREAD_H_
+#define __SYLAR_THREAD_H_
+
+#include <thread>
+#include <functional>
+#include <memory>
+#include <string>
+#include <pthread.h>
+// pthread_xxx
+// std::thread,pthread
+// #include <pthread.h>
+namespace sylar
+{
+    class Thread
+    {
+    public:
+        typedef std::shared_ptr<Thread> ptr;
+        Thread(std::function<void()> cb, const std::string &name);
+        ~Thread();
+
+        pid_t getId() const { return m_id; }
+        const std::string &getName() const { return m_name; }
+
+        void join();
+
+        static Thread *GetThis();
+
+        static const std::string &GetName();
+
+    private:
+        Thread(const Thread &) = delete;
+        Thread(const Thread &&) = delete;
+        Thread &operator=(const Thread &) = delete;
+
+    private:
+        pid_t m_id;
+        pthread_t m_thread;
+        std::function<void()> m_cb;
+        std::string m_name;
+    };
+}
+
+#endif
