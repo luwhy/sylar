@@ -192,8 +192,14 @@ void testClass()
 
 void testLog()
 {
+    static sylar::Logger::ptr system_log = SYLAR_LOG_NAME("system");
+    SYLAR_LOG_INFO(system_log) << "hello system" << std::endl;
+    std::cout << sylar::LoggerMgr::GetInstance()->toYamlString() << std::endl;
     YAML::Node root = YAML::LoadFile("/home/lubo/project/sylar/bin/config/log.yaml");
     sylar::Config::LoadFromYaml(root);
+
+    std::cout << "==========" << std::endl;
+    std::cout << sylar::LoggerMgr::GetInstance()->toYamlString() << std::endl;
 }
 int main()
 {

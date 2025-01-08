@@ -55,7 +55,7 @@ namespace sylar
     class LogLevel
     {
     public:
-        enum class Level : int
+        enum Level : int
         {
             UNKOWN = 0,
             DEBUG = 1,
@@ -162,6 +162,8 @@ namespace sylar
             return this->m_error;
         }
 
+        const std::string getParttern() const { return m_pattern; }
+
     private:
         std::string m_pattern;
         std::vector<FormatItem::ptr> m_items;
@@ -175,6 +177,8 @@ namespace sylar
         typedef std::shared_ptr<LogAppender> ptr;
         virtual ~LogAppender() {}
         virtual void log(std::shared_ptr<Logger> logger, LogLevel::Level level, LogEvent::ptr event) = 0;
+
+        virtual std::string toYamlString() = 0;
         // virtual void log(LogLevel::Level level, LogEvent::ptr event) = 0;
         void setFormatter(LogFormatter::ptr val)
         {
@@ -192,6 +196,8 @@ namespace sylar
     protected:
         LogLevel::Level m_level;
         LogFormatter::ptr m_formatter;
+        /// 是否有自己的日志格式器
+        bool m_hasFormatter = false;
     };
 
     // 日志器
@@ -226,6 +232,8 @@ namespace sylar
         void setFormatter(const std::string &val);
         LogFormatter::ptr getFormatter();
 
+        std::string toYamlString();
+
     private:
         std::string m_name;                      // 日志名称
         LogLevel::Level m_level;                 // 日志级别
@@ -240,6 +248,7 @@ namespace sylar
     public:
         typedef std::shared_ptr<StdoutLogAppender> ptr;
         void log(Logger::ptr logger, LogLevel::Level level, LogEvent::ptr event);
+        std::string toYamlString() override;
     };
 
     // 定义输出到文件的appender
@@ -251,6 +260,8 @@ namespace sylar
         void log(Logger::ptr, LogLevel::Level level, LogEvent::ptr event);
         // 重新打开文件返回true
         bool reopen();
+
+        std::string toYamlString() override;
 
     private:
         std::string m_filename;
@@ -270,8 +281,10 @@ namespace sylar
             return m_root;
         }
 
+        std::string toYamlString();
+
     private:
-        std::map<std::string, Logger::ptr> m_logger;
+        std::map<std::string, Logger::ptr> m_loggers;
         Logger::ptr m_root;
     };
 
