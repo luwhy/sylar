@@ -173,6 +173,8 @@ namespace sylar
     // 日志输出地(可能有很多种，比如std::cout或者文件)
     class LogAppender
     {
+        friend class Logger;
+
     public:
         typedef std::shared_ptr<LogAppender> ptr;
         virtual ~LogAppender() {}
@@ -180,10 +182,7 @@ namespace sylar
 
         virtual std::string toYamlString() = 0;
         // virtual void log(LogLevel::Level level, LogEvent::ptr event) = 0;
-        void setFormatter(LogFormatter::ptr val)
-        {
-            m_formatter = val;
-        }
+        void setFormatter(LogFormatter::ptr val);
         LogFormatter::ptr getFormatter()
         {
             return m_formatter;
@@ -196,6 +195,7 @@ namespace sylar
     protected:
         LogLevel::Level m_level;
         LogFormatter::ptr m_formatter;
+
         /// 是否有自己的日志格式器
         bool m_hasFormatter = false;
     };

@@ -200,6 +200,7 @@ void testLog()
 
     std::cout << "==========" << std::endl;
     std::cout << sylar::LoggerMgr::GetInstance()->toYamlString() << std::endl;
+    SYLAR_LOG_INFO(system_log) << "hello system" << std::endl;
 }
 int main()
 {

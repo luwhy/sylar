@@ -233,7 +233,7 @@ namespace sylar
     {
         if (!appender->getFormatter())
         {
-            appender->setFormatter(m_formatter);
+            appender->m_formatter = m_formatter;
         }
         m_appenders.push_back(appender);
     }
@@ -258,10 +258,13 @@ namespace sylar
     void Logger::setFormatter(LogFormatter::ptr val)
     {
         this->m_formatter = val;
-        // for (auto &i : m_appenders)
-        // {
-        //     i->m_formatter = m_formatter;
-        // }
+        for (auto &i : m_appenders)
+        {
+            if (!i->m_hasFormatter)
+            {
+                i->m_formatter = m_formatter;
+            }
+        }
     }
 
     void Logger::setFormatter(const std::string &val)
@@ -272,7 +275,8 @@ namespace sylar
             std::cout << "Logger setFormatter name= " << m_name << "value: " << val << " invalid formatter" << std::endl;
             return;
         }
-        this->m_formatter = new_val;
+        // this->m_formatter = new_val;
+        setFormatter(new_val);
     }
 
     LogFormatter::ptr Logger::getFormatter()
@@ -338,6 +342,29 @@ namespace sylar
         log(LogLevel::Level::FATAL, event);
     }
 
+    /**
+     * LogAppender
+     *
+     */
+    void LogAppender::setFormatter(LogFormatter::ptr val)
+    {
+
+        m_formatter = val;
+        if (m_formatter)
+        {
+            m_hasFormatter = true;
+        }
+        else
+        {
+            m_hasFormatter = false;
+        }
+    }
+
+    /**
+     *
+     * FileLogAppender
+     *
+     */
     FileLogAppender::FileLogAppender(const std::string &filename) : m_filename(filename)
     {
         this->reopen();
@@ -364,7 +391,7 @@ namespace sylar
             node["level"] = LogLevel::ToString(m_level);
         }
 
-        if (m_formatter)
+        if (m_hasFormatter && m_formatter)
         {
             node["formatter"] = m_formatter->getParttern();
         }
@@ -378,6 +405,11 @@ namespace sylar
         if (level >= m_level)
             m_filestream << m_formatter->format(logger, level, event);
     }
+    /**
+     *
+     * StdoutLogAppender
+     *
+     */
 
     void StdoutLogAppender::log(std::shared_ptr<Logger> logger, LogLevel::Level level, LogEvent::ptr event)
     {
@@ -396,7 +428,7 @@ namespace sylar
             node["level"] = LogLevel::ToString(m_level);
         }
 
-        if (m_formatter)
+        if (m_hasFormatter && m_formatter)
         {
             node["formatter"] = m_formatter->getParttern();
         }
@@ -777,6 +809,18 @@ namespace sylar
                                                        ap.reset(new StdoutLogAppender);
                                                    }
                                                    ap->setLevel(a.level);
+                                                   if (!a.formatter.empty())
+                                                   {
+                                                       LogFormatter::ptr fmt = std::make_shared<LogFormatter>(a.formatter);
+                                                       if (!fmt->isError())
+                                                       {
+                                                           ap->setFormatter(fmt);
+                                                       }
+                                                       else
+                                                       {
+                                                           std::cout << "log.name " << a.type << " formatter " << a.formatter << " is invalid" << std::endl;
+                                                       }
+                                                   }
                                                    logger->addAppender(ap);
                                                }
                                            }
@@ -832,4 +876,5 @@ namespace sylar
         ss << node;
         return ss.str();
     }
+
 }
