@@ -27,10 +27,14 @@ namespace sylar
 
         static const std::string &GetName();
 
+        static void SetName(const std::string &name);
+
     private:
         Thread(const Thread &) = delete;
         Thread(const Thread &&) = delete;
         Thread &operator=(const Thread &) = delete;
+
+        static void *run(void *arg);
 
     private:
         pid_t m_id;

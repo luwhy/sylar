@@ -268,6 +268,9 @@ namespace sylar
         std::ofstream m_filestream;
     };
 
+    /**
+     * logger管理
+     */
     class LogManage
     {
     public:

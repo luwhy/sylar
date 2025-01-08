@@ -11,22 +11,31 @@ include_directories(/app/sylar/include)
 link_directories(/app/sylar/lib)
 find_library(YAMLCPP libyaml-cpp.a)
 
+set(LIBS
+    sylar
+    pthread
+)
 
 
-set(LIB_SRC sylar/log.cc sylar/util.cc sylar/config.cc)
+set(LIB_SRC sylar/log.cc sylar/util.cc sylar/config.cc sylar/thread.cc)
 add_library(sylar SHARED ${LIB_SRC})
 force_redefine_file_macro_for_sources(sylar)
 
 add_executable(test test/test.cc)
 add_dependencies(test sylar)
 force_redefine_file_macro_for_sources(test)
-target_link_libraries(test sylar -L/apps/sylar/lib -lyaml-cpp)
+target_link_libraries(test ${LIBS} -lyaml-cpp)
+
 # target_include_directories(test PUBLIC ${PROJECT_SOURCE_DIR}/sylar)
 add_executable(testConfig test/testConfig.cc)
 add_dependencies(testConfig sylar)
 force_redefine_file_macro_for_sources(testConfig)
-target_link_libraries(testConfig sylar -L/apps/sylar/lib -lyaml-cpp) 
+target_link_libraries(testConfig ${LIBS} -lyaml-cpp) 
 
+add_executable(testThread test/test_thread.cc)
+add_dependencies(testThread sylar)
+force_redefine_file_macro_for_sources(testThread)
+target_link_libraries(testThread ${LIBS} -lyaml-cpp) 
 
 SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 SET(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
