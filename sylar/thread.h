@@ -194,6 +194,45 @@ namespace sylar
     private:
         pthread_rwlock_t m_lock;
     };
+
+    /**
+     *自旋锁
+     */
+    class SpinLock
+    {
+        typedef ScopedLockImpl<SpinLock> Lock;
+
+    public:
+        SpinLock();
+
+        ~SpinLock();
+
+        void lock();
+
+        void unlock();
+
+    private:
+        pthread_spinlock_t m_lock;
+    };
+
+    /**
+     *
+     * 了解一下CAS机制
+     *
+     */
+    class CASLock
+    {
+    public:
+        CASLock();
+        ~CASLock();
+        void lock();
+        void unlokck();
+
+    private:
+        // 需要了解volatile，表示变量随时可以发生变化
+        volatile std::atomic_flag m_mutex;
+    };
+
     class Thread
     {
     public:

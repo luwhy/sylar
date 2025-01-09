@@ -1,6 +1,7 @@
 #include "thread.h"
 #include "log.h"
 #include "util.h"
+#include <atomic>
 namespace sylar
 {
     /**
@@ -127,5 +128,49 @@ namespace sylar
         {
             throw std::logic_error("sem_post error");
         }
+    }
+
+    /**
+     *
+     * 自旋锁
+     *
+     */
+    SpinLock::SpinLock()
+    {
+        pthread_spin_init(&m_lock, 0);
+    }
+    SpinLock::~SpinLock()
+    {
+        pthread_spin_destroy(&m_lock);
+    }
+    void SpinLock::lock()
+    {
+        pthread_spin_lock(&m_lock);
+    }
+    void SpinLock::unlock()
+    {
+        pthread_spin_unlock(&m_lock);
+    }
+
+    /***
+     *
+     * CAS机制
+     *
+     */
+    CASLock::CASLock()
+    {
+        this->m_mutex.clear();
+    }
+    CASLock::~CASLock()
+    {
+    }
+    void CASLock::lock()
+    {
+        while (std::atomic_flag_test_and_set_explicit(&m_mutex, std::memory_order_acquire))
+            ;
+    }
+    void CASLock::unlokck()
+    {
+        std::atomic_flag_clear_explicit(&m_mutex, std::memory_order_release);
     }
 }
