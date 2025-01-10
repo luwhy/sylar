@@ -12,6 +12,7 @@
 #include "util.h"
 #include <map>
 #include "singleton.h"
+#include "thread.h"
 /**
  * logger 日志器
  * logformatter 格式
@@ -176,6 +177,7 @@ namespace sylar
         friend class Logger;
 
     public:
+        typedef Mutex MutexType;
         typedef std::shared_ptr<LogAppender> ptr;
         virtual ~LogAppender() {}
         virtual void log(std::shared_ptr<Logger> logger, LogLevel::Level level, LogEvent::ptr event) = 0;
@@ -183,10 +185,7 @@ namespace sylar
         virtual std::string toYamlString() = 0;
         // virtual void log(LogLevel::Level level, LogEvent::ptr event) = 0;
         void setFormatter(LogFormatter::ptr val);
-        LogFormatter::ptr getFormatter()
-        {
-            return m_formatter;
-        }
+        LogFormatter::ptr getFormatter();
         void setLevel(LogLevel::Level level)
         {
             this->m_level = level;
@@ -195,6 +194,8 @@ namespace sylar
     protected:
         LogLevel::Level m_level;
         LogFormatter::ptr m_formatter;
+
+        MutexType m_mutex;
 
         /// 是否有自己的日志格式器
         bool m_hasFormatter = false;
@@ -206,6 +207,7 @@ namespace sylar
         friend class LogManage;
 
     public:
+        typedef Mutex MutexType;
         typedef std::shared_ptr<Logger> ptr;
         Logger(const std::string &name = "root");
         void log(LogLevel::Level level, LogEvent::ptr event);
@@ -240,21 +242,27 @@ namespace sylar
         std::list<LogAppender::ptr> m_appenders; // Appender集合
         LogFormatter::ptr m_formatter;
         Logger::ptr m_root;
+        MutexType m_mutex;
     };
 
     // 输出到控制台的appender
     class StdoutLogAppender : public LogAppender
     {
     public:
+        typedef Mutex MutexType;
         typedef std::shared_ptr<StdoutLogAppender> ptr;
         void log(Logger::ptr logger, LogLevel::Level level, LogEvent::ptr event);
         std::string toYamlString() override;
+
+    private:
+        MutexType m_mutex;
     };
 
     // 定义输出到文件的appender
     class FileLogAppender : public LogAppender
     {
     public:
+        typedef Mutex MutexType;
         typedef std::shared_ptr<FileLogAppender> ptr;
         FileLogAppender(const std::string &filename);
         void log(Logger::ptr, LogLevel::Level level, LogEvent::ptr event);
@@ -266,6 +274,7 @@ namespace sylar
     private:
         std::string m_filename;
         std::ofstream m_filestream;
+        MutexType m_mutex;
     };
 
     /**
@@ -274,6 +283,7 @@ namespace sylar
     class LogManage
     {
     public:
+        typedef Mutex MutexType;
         LogManage();
         Logger::ptr getLogger(const std::string &name);
 
@@ -287,6 +297,7 @@ namespace sylar
         std::string toYamlString();
 
     private:
+        MutexType m_mutex;
         std::map<std::string, Logger::ptr> m_loggers;
         Logger::ptr m_root;
     };
