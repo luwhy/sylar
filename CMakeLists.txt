@@ -37,5 +37,10 @@ add_dependencies(testThread sylar)
 force_redefine_file_macro_for_sources(testThread)
 target_link_libraries(testThread ${LIBS} -lyaml-cpp) 
 
+add_executable(testUtil test/test_util.cc)
+add_dependencies(testUtil sylar)
+force_redefine_file_macro_for_sources(testUtil)
+target_link_libraries(testUtil ${LIBS} -lyaml-cpp) 
+
 SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 SET(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
