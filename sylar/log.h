@@ -177,7 +177,7 @@ namespace sylar
         friend class Logger;
 
     public:
-        typedef Mutex MutexType;
+        typedef NullMutex MutexType;
         typedef std::shared_ptr<LogAppender> ptr;
         virtual ~LogAppender() {}
         virtual void log(std::shared_ptr<Logger> logger, LogLevel::Level level, LogEvent::ptr event) = 0;
@@ -207,7 +207,7 @@ namespace sylar
         friend class LogManage;
 
     public:
-        typedef Mutex MutexType;
+        typedef NullMutex MutexType;
         typedef std::shared_ptr<Logger> ptr;
         Logger(const std::string &name = "root");
         void log(LogLevel::Level level, LogEvent::ptr event);
@@ -249,7 +249,7 @@ namespace sylar
     class StdoutLogAppender : public LogAppender
     {
     public:
-        typedef Mutex MutexType;
+        typedef NullMutex MutexType;
         typedef std::shared_ptr<StdoutLogAppender> ptr;
         void log(Logger::ptr logger, LogLevel::Level level, LogEvent::ptr event);
         std::string toYamlString() override;
@@ -262,7 +262,7 @@ namespace sylar
     class FileLogAppender : public LogAppender
     {
     public:
-        typedef Mutex MutexType;
+        typedef NullMutex MutexType;
         typedef std::shared_ptr<FileLogAppender> ptr;
         FileLogAppender(const std::string &filename);
         void log(Logger::ptr, LogLevel::Level level, LogEvent::ptr event);
@@ -284,7 +284,7 @@ namespace sylar
     class LogManage
     {
     public:
-        typedef Mutex MutexType;
+        typedef NullMutex MutexType;
         LogManage();
         Logger::ptr getLogger(const std::string &name);
 

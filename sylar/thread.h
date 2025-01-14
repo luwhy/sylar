@@ -233,6 +233,16 @@ namespace sylar
         volatile std::atomic_flag m_mutex;
     };
 
+    class NullMutex
+    {
+    public:
+        typedef ScopedLockImpl<NullMutex> Lock;
+        NullMutex();
+        ~NullMutex();
+        void lock();
+        void unlock();
+    };
+
     class Thread
     {
     public:

@@ -52,5 +52,8 @@ int main()
 
     SYLAR_LOG_INFO(g_logger) << "thread test end";
     SYLAR_LOG_INFO(g_logger) << "count " << count;
+
+    sylar::Config::Visit([](sylar::ConfigVarBase::ptr var)
+                         { SYLAR_LOG_INFO(g_logger) << "name" << var->getName(); });
     return 0;
 }

@@ -234,7 +234,7 @@ namespace sylar
         MutexType::Lock lock(m_mutex);
         if (!appender->getFormatter())
         {
-            Mutex::Lock ll(appender->m_mutex);
+            MutexType::Lock ll(appender->m_mutex);
             appender->m_formatter = m_formatter;
         }
         m_appenders.push_back(appender);
@@ -315,7 +315,7 @@ namespace sylar
         if (level >= m_level)
         {
             auto self = shared_from_this();
-            Mutex::Lock lock(m_mutex);
+            MutexType::Lock lock(m_mutex);
             if (!m_appenders.empty())
             {
                 for (auto &i : m_appenders)
@@ -802,7 +802,7 @@ namespace sylar
     {
         LogIniter()
         {
-            g_log_defines->addListener(0xF1E231, [](const std::set<LogDefine> &old_value, const std::set<LogDefine> &new_value)
+            g_log_defines->addListener([](const std::set<LogDefine> &old_value, const std::set<LogDefine> &new_value)
                                        {
                                            SYLAR_LOG_INFO(SYLAR_LOG_ROOT()) << "on_logger_conf_changed";
                                            for (auto &i : new_value)

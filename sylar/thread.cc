@@ -173,4 +173,23 @@ namespace sylar
     {
         std::atomic_flag_clear_explicit(&m_mutex, std::memory_order_release);
     }
+
+    /**
+     *
+     * 空锁
+     *
+     */
+    NullMutex::NullMutex()
+    {
+    }
+    NullMutex::~NullMutex()
+    {
+    }
+
+    void NullMutex::lock()
+    {
+    }
+    void NullMutex::unlock()
+    {
+    }
 }

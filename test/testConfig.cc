@@ -177,7 +177,7 @@ void testClass()
         }                                                                                                   \
         SYLAR_LOG_INFO(SYLAR_LOG_ROOT()) << #prefix << ": " << m_p.size();                                  \
     }
-    g_person->addListener(10, [](const Person &oldValue, const Person &newValue)
+    g_person->addListener([](const Person &oldValue, const Person &newValue)
                           { SYLAR_LOG_INFO(SYLAR_LOG_ROOT()) << "old_value = " << oldValue.toString() << " new_value=" << newValue.toString(); });
     // XXPM(g_person_map, "class.map before")
     std::cout << 1 << std::endl;
@@ -206,6 +206,9 @@ int main()
 {
     // testYaml();
     // testClass();
-    testLog();
+    // testLog();
+    sylar::Config::Visit([](sylar::ConfigVarBase::ptr var)
+                         { std::cout<<"en"<<std::endl;
+                            SYLAR_LOG_INFO(SYLAR_LOG_ROOT()) << "name" << var->getName(); });
     return 0;
 }
