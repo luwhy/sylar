@@ -69,9 +69,9 @@ namespace sylar
 
     class Mutex
     {
-        typedef ScopedLockImpl<Mutex> Lock;
 
     public:
+        typedef ScopedLockImpl<Mutex> Lock;
         Mutex()
         {
             pthread_mutex_init(&m_mutex, NULL);

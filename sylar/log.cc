@@ -421,8 +421,17 @@ namespace sylar
     {
         if (level >= m_level)
         {
+            uint64_t now = time(0);
+            if (now != m_lastTime)
+            {
+                reopen();
+                m_lastTime = now;
+            }
             MutexType::Lock lock(m_mutex);
-            m_filestream << m_formatter->format(logger, level, event);
+            if (m_filestream << m_formatter->format(logger, level, event))
+            {
+                std::cout << "error" << std::endl;
+            }
         }
     }
     /**
