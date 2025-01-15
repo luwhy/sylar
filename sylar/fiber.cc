@@ -48,8 +48,8 @@ namespace sylar
     {
         ++s_fiber_count;
         m_stacksize = stacksize ? stacksize : g_fiber_stack_size->getValue();
-        SYLAR_LOG_DEBUG(g_logger_f) << "Fiber::Fiber stacksize " << m_stacksize;
-        // 初始化结构体，病将当前上下文信息保存在m_ctx中
+        // SYLAR_LOG_DEBUG(g_logger_f) << "Fiber::Fiber stacksize " << m_stacksize;
+        //  初始化结构体，病将当前上下文信息保存在m_ctx中
         m_stack = StackAllocator::Alloc(m_stacksize);
         if (getcontext(&m_ctx))
         {
@@ -174,6 +174,10 @@ namespace sylar
             cur->m_state = State::EXCEPT;
             SYLAR_LOG_ERROR(g_logger_f) << "Fiber Except";
         }
+        auto raw_ptr = cur.get();
+        cur.reset();
+        raw_ptr->swapOut();
+        SYLAR_ASSERT2(false, "never reach");
     }
     uint64_t Fiber::GetFiberId()
     {
