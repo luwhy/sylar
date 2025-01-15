@@ -17,7 +17,7 @@ set(LIBS
 )
 
 
-set(LIB_SRC sylar/log.cc sylar/util.cc sylar/config.cc sylar/thread.cc)
+set(LIB_SRC sylar/log.cc sylar/util.cc sylar/config.cc sylar/thread.cc sylar/fiber.cc)
 add_library(sylar SHARED ${LIB_SRC})
 force_redefine_file_macro_for_sources(sylar)
 
@@ -41,6 +41,13 @@ add_executable(testUtil test/test_util.cc)
 add_dependencies(testUtil sylar)
 force_redefine_file_macro_for_sources(testUtil)
 target_link_libraries(testUtil ${LIBS} -lyaml-cpp) 
+
+add_executable(testFiber test/test_fiber.cc)
+add_dependencies(testFiber sylar)
+force_redefine_file_macro_for_sources(testFiber)
+target_link_libraries(testFiber ${LIBS} -lyaml-cpp) 
+
+
 
 SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 SET(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
