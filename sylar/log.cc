@@ -146,6 +146,17 @@ namespace sylar
         }
     };
 
+    // 线程名称
+    class ThreadNameFormatterItem : public FormatItem
+    {
+    public:
+        ThreadNameFormatterItem(const std::string &str = "") {}
+        void format(std::ostream &os, Logger::ptr logger, LogLevel::Level level, LogEvent::ptr event) override
+        {
+            os << event->getThreadName();
+        }
+    };
+
     class LineFormatItem : public FormatItem
     {
     public:
@@ -192,7 +203,7 @@ namespace sylar
         }
     };
 
-    LogEvent::LogEvent(std::shared_ptr<Logger> logger, LogLevel::Level level, const char *file, int32_t line, uint32_t elapse, uint32_t thread_id, uint32_t fiber_id, uint64_t time)
+    LogEvent::LogEvent(std::shared_ptr<Logger> logger, LogLevel::Level level, const char *file, int32_t line, uint32_t elapse, uint32_t thread_id, uint32_t fiber_id, uint64_t time, const std::string &threadName)
     {
         this->m_logger = logger;
         this->m_file = file;
@@ -202,6 +213,7 @@ namespace sylar
         this->m_fiberId = fiber_id;
         this->m_time = time;
         this->m_level = level;
+        this->m_threadName = threadName;
     }
 
     void LogEvent::format(const char *fmt, va_list al)
@@ -226,7 +238,7 @@ namespace sylar
     Logger::Logger(const std::string &name) : m_name(name), m_level(LogLevel::Level::DEBUG)
     {
 
-        m_formatter.reset(new LogFormatter("%d{%Y-%m-%d %H:%M:%S}%T%t%T%F%T[%p]%T[%c]%T%f:%l%T%m%n"));
+        m_formatter.reset(new LogFormatter("%d{%Y-%m-%d %H:%M:%S}%T%t%T%N%T%F%T[%p]%T[%c]%T%f:%l%T%m%n"));
     }
 
     void Logger::addAppender(LogAppender::ptr appender)
@@ -577,18 +589,18 @@ namespace sylar
     {                                                                            \
         #str, [](const std::string &fmt) { return FormatItem::ptr(new C(fmt)); } \
     }
-            XX(m, MessageFormatItem),  // m:消息
-            XX(p, LevelFormatItem),    // p:日志级别
-            XX(r, ElapseFormatItem),   // r:累计毫秒数
-            XX(c, NameFormatItem),     // c:日志名称
-            XX(t, ThreadIdFormatItem), // t:线程id
-            XX(n, NewLineFormatItem),  // n:换行
-            XX(d, DateTimeFormatItem), // d:时间
-            XX(f, FilenameFormatItem), // f:文件名
-            XX(l, LineFormatItem),     // l:行号
-            XX(T, TabFormatItem),      // T:Tab
-            XX(F, FiberIdFormatItem),  // F:协程id
-                                       // XX(N, ThreadNameFormatItem), // N:线程名称
+            XX(m, MessageFormatItem),      // m:消息
+            XX(p, LevelFormatItem),        // p:日志级别
+            XX(r, ElapseFormatItem),       // r:累计毫秒数
+            XX(c, NameFormatItem),         // c:日志名称
+            XX(t, ThreadIdFormatItem),     // t:线程id
+            XX(n, NewLineFormatItem),      // n:换行
+            XX(d, DateTimeFormatItem),     // d:时间
+            XX(f, FilenameFormatItem),     // f:文件名
+            XX(l, LineFormatItem),         // l:行号
+            XX(T, TabFormatItem),          // T:Tab
+            XX(F, FiberIdFormatItem),      // F:协程id
+            XX(N, ThreadNameFormatterItem) // XX(N, ThreadNameFormatItem), // N:线程名称
 
 #undef XX
         };
