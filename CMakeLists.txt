@@ -17,7 +17,7 @@ set(LIBS
 )
 
 
-set(LIB_SRC sylar/log.cc sylar/util.cc sylar/config.cc sylar/thread.cc sylar/fiber.cc)
+set(LIB_SRC sylar/log.cc sylar/util.cc sylar/config.cc sylar/thread.cc sylar/fiber.cc sylar/scheduler.cc)
 add_library(sylar SHARED ${LIB_SRC})
 force_redefine_file_macro_for_sources(sylar)
 
