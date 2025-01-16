@@ -63,8 +63,8 @@ namespace sylar
         static uint64_t GetFiberId();
 
     private:
-        uint64_t m_id;
-        uint32_t m_stacksize;
+        uint64_t m_id = 0;
+        uint32_t m_stacksize = 0;
         State m_state = State::INIT;
         // 提供所谓的用户上下文信息
         ucontext_t m_ctx;

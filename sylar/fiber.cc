@@ -10,9 +10,10 @@ namespace sylar
 
     static std::atomic<uint64_t> s_fiber_count{0};
 
-    // 每个线程拥有其自身的对象实例
+    // 每个线程拥有其自身的对象实例,这个指代当前协程
     static thread_local Fiber *t_fiber = nullptr;
 
+    // 这个是主协程
     static thread_local Fiber::ptr t_threadFiber = nullptr;
 
     // 栈大小
@@ -40,16 +41,19 @@ namespace sylar
         SetThis(this);
         if (getcontext(&m_ctx))
         {
-            SYLAR_ASSERT(false)
+            SYLAR_ASSERT2(false, "getcontext")
         }
         ++s_fiber_count;
     }
-    Fiber::Fiber(std::function<void()> cb, size_t stacksize) : m_id(++s_fiber_id), m_cb(cb)
+    Fiber::Fiber(std::function<void()> cb, size_t stacksize) : m_cb(cb)
     {
+        m_id = s_fiber_id;
+        ++s_fiber_id;
         ++s_fiber_count;
         m_stacksize = stacksize ? stacksize : g_fiber_stack_size->getValue();
         // SYLAR_LOG_DEBUG(g_logger_f) << "Fiber::Fiber stacksize " << m_stacksize;
         //  初始化结构体，病将当前上下文信息保存在m_ctx中
+        // 分配栈空间
         m_stack = StackAllocator::Alloc(m_stacksize);
         if (getcontext(&m_ctx))
         {
@@ -125,6 +129,11 @@ namespace sylar
     {
         t_fiber = f;
     }
+    /**
+     *
+     * 如果还没协程，本协程设置为main协程
+     *
+     */
     Fiber::ptr Fiber::GetThis()
     {
         if (t_fiber)
@@ -154,6 +163,12 @@ namespace sylar
     {
         return s_fiber_count;
     }
+
+    /**
+     *
+     * static 函数
+     *
+     */
     void Fiber::MainFunc()
     {
         Fiber::ptr cur = GetThis();
