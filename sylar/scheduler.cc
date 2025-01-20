@@ -80,12 +80,17 @@ namespace sylar
             m_threads[i].reset(new Thread(std::bind(&Scheduler::run, this), m_name + "_" + std::to_string(i)));
             m_threadIds.push_back(m_threads[i]->getId());
         }
+        lock.unlock();
+        if (m_rootFiber)
+        {
+            m_rootFiber->swapIn();
+        }
     }
 
     void Scheduler::stop()
     {
         m_autoStop = true;
-        if (m_rootFiber && m_threadCount == 0 && (m_rootFiber->getState() == Fiber::TERM || m_rootFiber->getState() == Fiber::INIT))
+        if (m_rootFiber && m_threadCount == 0 && (m_rootFiber->m_state == Fiber::TERM || m_rootFiber->m_state == Fiber::INIT))
         {
             SYLAR_LOG_INFO(g_logger_s) << this << " stopped";
             m_stoping = true;
@@ -122,6 +127,7 @@ namespace sylar
 
     void Scheduler::tickle()
     {
+        SYLAR_LOG_INFO(g_logger_s) << "tickle";
     }
     void Scheduler::run()
     {
@@ -149,7 +155,7 @@ namespace sylar
                         continue;
                     }
                     SYLAR_ASSERT(it->fiber || it->cb)
-                    if (it->fiber && it->fiber->getState() == Fiber::EXEC)
+                    if (it->fiber && it->fiber->m_state == Fiber::EXEC)
                     {
                         ++it;
                         continue;
@@ -163,18 +169,18 @@ namespace sylar
                 tickle();
             }
             // 唤醒执行
-            if (ft.fiber && (ft.fiber->getState() != Fiber::TERM) || ft.fiber->getState() != Fiber::EXCEPT)
+            if (ft.fiber && ((ft.fiber->m_state != Fiber::TERM) || ft.fiber->m_state != Fiber::EXCEPT))
             {
                 ++m_activeThreadCount;
                 ft.fiber->swapIn();
                 --m_activeThreadCount;
-                if (ft.fiber->getState() == Fiber::READY)
+                if (ft.fiber->m_state == Fiber::READY)
                 {
                     schedule(ft.fiber);
                 }
-                else if (ft.fiber->getState() != Fiber::TERM && ft.fiber->getState() != Fiber::EXCEPT)
+                else if (ft.fiber->m_state != Fiber::TERM && ft.fiber->m_state != Fiber::EXCEPT)
                 {
-                    ft.fiber->setState(Fiber::HOLD);
+                    ft.fiber->m_state = Fiber::HOLD;
                 }
 
                 ft.reset();
@@ -193,41 +199,42 @@ namespace sylar
                 ++m_activeThreadCount;
                 cb_fiber->swapIn();
                 --m_activeThreadCount;
-                if (cb_fiber->getState() == Fiber::READY)
+                if (cb_fiber->m_state == Fiber::READY)
                 {
                     schedule(cb_fiber);
                     cb_fiber.reset();
                 }
                 // 直接释放掉
-                else if (cb_fiber->getState() == Fiber::EXCEPT || cb_fiber->getState() == Fiber::TERM)
+                else if (cb_fiber->m_state == Fiber::EXCEPT || cb_fiber->m_state == Fiber::TERM)
                 {
                     cb_fiber->reset(nullptr);
                 }
                 else // if (cb_fiber->getState() != Fiber::TERM)
                 {
-                    cb_fiber->setState(Fiber::HOLD);
+                    cb_fiber->m_state = Fiber::HOLD;
                     cb_fiber.reset();
                 }
             }
             else
             {
-                if (idle_fiber->getState() == Fiber::TERM)
+                if (idle_fiber->m_state == Fiber::TERM)
                 {
+                    SYLAR_LOG_INFO(g_logger_s) << "iddle fiber term";
                     break;
                 }
                 ++m_idleThreadCount;
                 idle_fiber->swapIn();
                 --m_idleThreadCount;
-                if (idle_fiber->getState() != Fiber::TERM || idle_fiber->getState() != Fiber::EXCEPT)
+                if (idle_fiber->m_state != Fiber::TERM || idle_fiber->m_state != Fiber::EXCEPT)
                 {
-                    idle_fiber->setState(Fiber::HOLD);
+                    idle_fiber->m_state = Fiber::HOLD;
                 }
             }
         }
     }
     bool Scheduler::stopping()
     {
-        return false;
+        return m_autoStop && m_stoping && m_fibers.empty() && m_activeThreadCount == 0;
     }
     void Scheduler::setThis()
     {
@@ -237,5 +244,6 @@ namespace sylar
     // 等待部分
     void Scheduler::idle()
     {
+        SYLAR_LOG_INFO(g_logger_s) << "iddle";
     }
 }

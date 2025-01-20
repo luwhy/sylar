@@ -5,7 +5,6 @@
 #include <functional>
 #include <ucontext.h>
 #include "thread.h"
-
 namespace sylar
 {
     /**
@@ -15,8 +14,11 @@ namespace sylar
      * 可以获取自身智能指针
      *
      */
+    class Scheduler;
     class Fiber : public std::enable_shared_from_this<Fiber>
     {
+        friend class Scheduler;
+
     public:
         typedef std::shared_ptr<Fiber> ptr;
         enum State
@@ -45,10 +47,6 @@ namespace sylar
         void swapOut();
 
         uint64_t getId() const { return m_id; }
-
-        Fiber::State getState();
-
-        void setState(Fiber::State state);
 
     public:
         // 设置当前协程

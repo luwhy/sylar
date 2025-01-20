@@ -30,7 +30,7 @@ namespace sylar
          */
         Scheduler(size_t threads = 1, bool use_caller = true, const std::string &name = "");
 
-        ~Scheduler();
+        virtual ~Scheduler();
 
         const std::string &getName() const { return m_name; }
 
@@ -86,7 +86,7 @@ namespace sylar
 
     private:
         template <class FiberOrCb>
-        void schedulerNoLock(FiberOrCb fc, int thread = -1)
+        bool schedulerNoLock(FiberOrCb fc, int thread)
         {
             bool need_tickle = m_fibers.empty();
             FiberAndThread ft(fc, thread);
@@ -94,7 +94,7 @@ namespace sylar
             {
                 m_fibers.push_back(ft);
             }
-            return;
+            return need_tickle;
         }
 
     private:

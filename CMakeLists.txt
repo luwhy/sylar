@@ -7,6 +7,7 @@ include(cmake/utils.cmake)
 set(CMAKE_VERBOSE_MAKEFILE ON)
 
 set(CMAKE_CXX_FLAGS "$ENV{CXXFLAGS} -rdynamic -O0 -g -std=c++11 -Wall -Wno-deprecated -Werror -Wno-unused-function -Wno-builtin-macro-redefined -Wno-deprecated-declarations")
+set(CMAKE_C_FLAGS "$ENV{CXXFLAGS} -rdynamic -O3 -fPIC -ggdb -std=c11 -Wall -Wno-deprecated -Werror -Wno-unused-function -Wno-builtin-macro-redefined -Wno-deprecated-declarations")
 include_directories(/app/sylar/include)
 link_directories(/app/sylar/lib)
 find_library(YAMLCPP libyaml-cpp.a)
@@ -47,6 +48,11 @@ add_dependencies(testFiber sylar)
 force_redefine_file_macro_for_sources(testFiber)
 target_link_libraries(testFiber ${LIBS} -lyaml-cpp) 
 
+
+add_executable(testSchedule test/test_scheduler.cc)
+add_dependencies(testSchedule sylar)
+force_redefine_file_macro_for_sources(testSchedule)
+target_link_libraries(testSchedule ${LIBS} -lyaml-cpp) 
 
 
 SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)

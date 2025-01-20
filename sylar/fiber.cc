@@ -3,6 +3,7 @@
 #include "config.h"
 #include "macro.h"
 #include "log.h"
+#include "scheduler.h"
 namespace sylar
 {
     sylar::Logger::ptr g_logger_f = SYLAR_LOG_NAME("system");
@@ -111,7 +112,7 @@ namespace sylar
     {
         SetThis(this);
         SYLAR_ASSERT(m_state != State::EXEC);
-        if (swapcontext(&(t_threadFiber->m_ctx), &m_ctx))
+        if (swapcontext(&Scheduler::GetMainFiber()->m_ctx, &m_ctx))
         {
             SYLAR_ASSERT2(false, "Fiber")
         }
@@ -119,19 +120,11 @@ namespace sylar
     // 把当前协程切换到后台，把main协程调出来
     void Fiber::swapOut()
     {
-        SetThis((t_threadFiber).get());
-        if (swapcontext(&m_ctx, &(t_threadFiber->m_ctx)))
+        SetThis(Scheduler::GetMainFiber());
+        if (swapcontext(&m_ctx, &Scheduler::GetMainFiber()->m_ctx))
         {
             SYLAR_ASSERT2(false, "Fiber")
         }
-    }
-    Fiber::State Fiber::getState()
-    {
-        return m_state;
-    }
-    void Fiber::setState(Fiber::State state)
-    {
-        this->m_state = state;
     }
     void Fiber::SetThis(Fiber *f)
     {
