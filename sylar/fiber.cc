@@ -125,6 +125,14 @@ namespace sylar
             SYLAR_ASSERT2(false, "Fiber")
         }
     }
+    Fiber::State Fiber::getState()
+    {
+        return m_state;
+    }
+    void Fiber::setState(Fiber::State state)
+    {
+        this->m_state = state;
+    }
     void Fiber::SetThis(Fiber *f)
     {
         t_fiber = f;

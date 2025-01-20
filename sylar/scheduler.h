@@ -5,6 +5,7 @@
 #include "thread.h"
 #include <vector>
 #include <list>
+#include <atomic>
 namespace sylar
 {
     /**
@@ -28,7 +29,6 @@ namespace sylar
          *
          */
         Scheduler(size_t threads = 1, bool use_caller = true, const std::string &name = "");
-        virtual ~Scheduler();
 
         ~Scheduler();
 
@@ -78,6 +78,11 @@ namespace sylar
     protected:
         virtual void tickle();
         void run();
+        virtual bool stopping();
+
+        void setThis();
+
+        virtual void idle();
 
     private:
         template <class FiberOrCb>
@@ -89,7 +94,7 @@ namespace sylar
             {
                 m_fibers.push_back(ft);
             }
-            return need_tickle;
+            return;
         }
 
     private:
@@ -114,6 +119,7 @@ namespace sylar
                 cb.swap(*c);
             }
             FiberAndThread() : thread(-1) {}
+
             void reset()
             {
                 fiber = nullptr;
@@ -138,8 +144,8 @@ namespace sylar
         // 存放线程id
         std::vector<pid_t> m_threadIds;
         size_t m_threadCount = 0;
-        size_t m_activeThreadCount = 0;
-        size_t m_idleThreadCount = 0;
+        std::atomic<size_t> m_activeThreadCount{0};
+        std::atomic<size_t> m_idleThreadCount{0};
         bool m_stoping = true;
         bool m_autoStop = false;
 
