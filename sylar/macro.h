@@ -9,7 +9,7 @@
     if (!(x))                                                                          \
     {                                                                                  \
         SYLAR_LOG_ERROR(SYLAR_LOG_ROOT()) << "ASSERTION:" << #x << "\nbacktrace:\n"    \
-                                          << sylar::BackTraceToString(100, 2, "    "); \
+                                          << sylar::BacktraceToString(100, 2, "    "); \
         assert(x);                                                                     \
     }
 
@@ -19,7 +19,7 @@
         SYLAR_LOG_ERROR(SYLAR_LOG_ROOT()) << "ASSERTION:" << #x                        \
                                           << "\n"                                      \
                                           << w << "\nbacktrace:\n"                     \
-                                          << sylar::BackTraceToString(100, 2, "    "); \
+                                          << sylar::BacktraceToString(100, 2, "    "); \
         assert(x);                                                                     \
     }
 
