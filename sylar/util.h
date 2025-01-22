@@ -1,3 +1,5 @@
+#ifndef __SYLAR_UTIL__
+#define __SYLAR_UTIL__
 #include <sys/syscall.h>
 #include <pthread.h>
 #include <sys/types.h>
@@ -12,7 +14,9 @@ namespace sylar
     // 获取当前携程号
     uint32_t GetFiberId();
 
-    void BackTrace(std::vector<std::string> &bt, int size, int skip);
+    void BackTrace(std::vector<std::string> &bt, int size = 64, int skip = 2);
 
-    std::string BackTraceToString(int size, int skip, const std::string &prefix);
+    std::string BacktraceToString(int size = 64, int skip = 2, const std::string &prefix = "");
 }
+
+#endif
