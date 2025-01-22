@@ -42,7 +42,7 @@ namespace sylar
         free(strings);
         free(array);
     }
-    std::string BackTraceToString(int size, int skip, const std::string &prefix = "")
+    std::string BacktraceToString(int size, int skip, const std::string &prefix)
     {
         std::vector<std::string> bt;
         BackTrace(bt, size, skip);
