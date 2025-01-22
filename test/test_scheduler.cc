@@ -8,8 +8,8 @@ void test()
 }
 int main()
 {
-
-    sylar::Scheduler sc;
+    // false就不使用当前线程
+    sylar::Scheduler sc(3, false, "test");
     sc.start();
     sc.schedule(&test);
     sc.stop();
