@@ -2,6 +2,9 @@
 #define __SYLAR__IOMANAGE_H__
 #include "scheduler.h"
 #include "fiber.h"
+#include <atomic>
+#include <vector>
+#include "macro.h"
 namespace sylar
 {
 
@@ -32,11 +35,9 @@ namespace sylar
             EventContext read;     // 读事件
             EventContext write;    // 写事件
             Event m_events = NONE; // 已经注册的事件
-            int fd;                // 事件关联句柄
+            int fd = 0;            // 事件关联句柄
             MutexType mutex;
         };
-
-        RWMutexType rwmutex;
 
     public:
         IOManager(size_t threads = 1, bool use_caller = true, const std::string &name = "");
@@ -60,9 +61,23 @@ namespace sylar
 
         virtual void idle() override;
 
+        void contextResize(size_t size);
+
     private:
         int m_epfd = 0;
-        };
+
+        // 传给pipe的参数
+        int m_tickleFds[2];
+
+        // 等待执行的事件数量
+        std::atomic<size_t> m_penddingEventCount = {0};
+
+        RWMutexType m_rwmutex;
+
+        std::vector<FdContext *> m_fdContexts;
+
+        // epoll_create epoll_wait epoll ctl
+    };
 
 }
 #endif
